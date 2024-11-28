@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useReducer } from "react";
+import { supabase } from "../utils/supabase";
 
 export const CartContext = createContext({
     items: [],
@@ -9,10 +10,9 @@ export const CartContext = createContext({
     addItemToCart: () => { },
     updateItemQuantity: () => { },
     subItemToCart: () => { }
-
-
 });
 
+ 
 export default function CartContextProvider({ children }) {
 
     const [products, setProducts] = useState([]);
@@ -20,23 +20,38 @@ export default function CartContextProvider({ children }) {
     const [loading, setLoading] = useState(false);
     const [total, setTotal] = useState(0);
 
-
-
-
     useEffect(() => {
-        async function fetchProducts() {
+         
+        async function getProducts() {
             setLoading(true);
-            const response = await fetch("https://dummyjson.com/products/category/fragrances?limit=12&select=id,thumbnail,title,price,description");
-            if (response.ok) {
-                const result = await response.json();
-                setProducts(result.products);
+            const { data: products , error } = 
+                await supabase.from("products").select();
+            if (products.length > 0) {
+                setProducts(products);
             } else {
-                setError("Fetch FAILED!");
+                setError(`Fecting products failed! ${error}`)
             }
             setLoading(false);
         }
+        getProducts();
+    
 
-        fetchProducts();
+
+
+    // useEffect(() => {
+    //     async function fetchProducts() {
+    //         setLoading(true);
+    //         const response = await fetch("https://dummyjson.com/products/category/fragrances?limit=12&select=id,thumbnail,title,price,description");
+    //         if (response.ok) {
+    //             const result = await response.json();
+    //             setProducts(result.products);
+    //         } else {
+    //             setError("Fetch FAILED!");
+    //         }
+    //         setLoading(false);
+    //     }
+
+    //     fetchProducts();
     }, []);
 
     // SHOPPING CART
